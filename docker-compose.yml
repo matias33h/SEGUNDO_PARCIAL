@@ -1,0 +1,83 @@
+version: '3'
+
+services:
+  # nombre del servio
+  database: 
+    # imagen a utilizar
+    image: mysql:8.0.33
+
+    # nombre del contenedor
+    container_name: my-database-1
+
+    # variables de entorno
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tienda
+
+    # mapeo de puertos
+    ports:
+      - 3306:3306
+
+    volumes:
+      - ./dbdata/mysql:/var/lib/mysql
+
+
+  databasemongo: 
+    # imagen a utilizar
+    image: mongo:6.0
+
+    # nombre del contenedor
+    container_name: my-database-2
+
+    # variables de entorno
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: producto
+
+    # mapeo de puertos
+    ports:
+       - 27017:27017
+
+    volumes:
+      - ./dbdata/mysql:/var/lib/mysql
+
+
+ 
+
+
+
+
+  servidor:
+    # nombre del contendor
+    container_name: express-server
+
+    # imagen a utilizar
+    build:
+      # carpeta donde se encuentra el codigo
+      context: ./server
+
+      # ubica el dockerfile
+      dockerfile: Dockerfile
+
+    # variables de entorno
+    environment:
+      PORT: 3000
+      DATABASE_HOST: database
+      DATABASE_SERVICE_NAME: databasemongo
+      DATABASE_USER: root
+      DATABASE_PASSWORD: root
+      DATABASE_NAME: tienda
+
+    # si falla intenta reiniciarse
+    restart: always
+
+    # dependencias del contenedor
+    depends_on:
+      - database
+
+    # mapeo de puertos
+    ports:
+      - 3000:3000
+
+    volumes:
+      - ./server:/server
